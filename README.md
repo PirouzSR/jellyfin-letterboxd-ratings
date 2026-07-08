@@ -21,6 +21,17 @@ Jellyfin's server plugins can't natively add a third badge to the web UI, so thi
 - If the web directory isn't writable (check the log for a `Letterboxd:` warning), the badge is skipped but everything else still works; the log message includes the one-line tag you can add to `index.html` manually.
 - Ratings shown by the badge come from the plugin's local cache, so run the scheduled task at least once first.
 
+## Client compatibility
+
+| Client | What you see | How |
+|---|---|---|
+| **Web UI** (browser, desktop app, clients that embed jellyfin-web) | Letterboxd logo badge in the ratings row, next to IMDb/critic badges. The description line is hidden client-side to avoid duplication. | Injected script |
+| **Google TV / Android TV, Roku, Swiftfin, Kodi, and all other native apps** | The rating as the last line of the movie description, e.g. `★ 4.1/5 on Letterboxd (108,132 ratings)` | Server metadata — rendered natively by every client with zero client-side changes |
+
+Native apps are compiled clients that render their own hardcoded UI from the server's metadata API; **no Jellyfin plugin can inject custom UI into them** (this is why even Intro Skipper required native clients to add built-in support). The description line is the designed failover: it travels through the same metadata API as everything else, so it appears automatically and reliably on every device, and each client shows the rating exactly once.
+
+**Roku note:** if the ★ glyph renders as a box on your Roku's font, change the description format in plugin settings to a glyph-free version such as `Letterboxd: {rating}/5 ({count} ratings)` — formats starting with "Letterboxd" are fully supported by the updater.
+
 ## Display options (plugin settings)
 
 | Option | Default | What it does |

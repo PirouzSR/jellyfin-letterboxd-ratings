@@ -100,6 +100,35 @@
         }
     }
 
+    // On web we show the badge, so hide the description fallback line that
+    // exists for native clients (Roku, Android/Google TV, etc.). This is a
+    // purely cosmetic, client-side change — server metadata is untouched.
+    var OVERVIEW_LINE = /(\n{0,2})(?:★[^\n]*Letterboxd[^\n]*|Letterboxd\b[^\n]*)(\n{0,2})/;
+
+    function hideOverviewLine() {
+        var nodes = document.querySelectorAll(
+            '.overview, .overview-text, .itemOverview, [class*="overview"]');
+        for (var i = 0; i < nodes.length; i++) {
+            var node = nodes[i];
+            if (node.dataset.letterboxdCleaned === '1') {
+                continue;
+            }
+            if (OVERVIEW_LINE.test(node.textContent || '')) {
+                // Walk text nodes so we never disturb the element's markup.
+                var walker = document.createTreeWalker(node, NodeFilter.SHOW_TEXT);
+                var textNode;
+                while ((textNode = walker.nextNode())) {
+                    if (OVERVIEW_LINE.test(textNode.nodeValue)) {
+                        textNode.nodeValue = textNode.nodeValue
+                            .replace(OVERVIEW_LINE, '')
+                            .replace(/\s+$/, '');
+                    }
+                }
+                node.dataset.letterboxdCleaned = '1';
+            }
+        }
+    }
+
     function removeBadges() {
         var existing = document.querySelectorAll('.' + BADGE_CLASS);
         for (var i = 0; i < existing.length; i++) {
@@ -126,6 +155,7 @@
             }
             if (rating && rating.Value > 0) {
                 insertBadges(rating);
+                hideOverviewLine();
                 lastRenderedFor = itemId;
             }
         });

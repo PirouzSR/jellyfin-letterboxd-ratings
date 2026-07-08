@@ -59,9 +59,9 @@ public partial class UpdateLetterboxdRatingsTask : IScheduledTask
     public string Category => "Letterboxd";
 
     // Matches a rating line previously written by this plugin so it can be
-    // replaced idempotently on refresh. Anchored to a full line containing
-    // both a star glyph and the word Letterboxd.
-    [GeneratedRegex(@"\n*^★.*Letterboxd.*$", RegexOptions.Multiline)]
+    // replaced idempotently on refresh: a full line that contains the word
+    // Letterboxd and starts with either the star glyph or "Letterboxd".
+    [GeneratedRegex(@"\n*^(?:★.*Letterboxd.*|Letterboxd\b.*)$", RegexOptions.Multiline)]
     private static partial Regex OverviewLineRegex();
 
     /// <inheritdoc />
@@ -225,9 +225,11 @@ public partial class UpdateLetterboxdRatingsTask : IScheduledTask
                 rating.Count.ToString("N0", CultureInfo.InvariantCulture),
                 StringComparison.OrdinalIgnoreCase);
 
-        // Guarantee the line matches the idempotency regex (starts with ★ and
-        // contains "Letterboxd") so it can be found and replaced on refresh.
-        if (!line.StartsWith('★'))
+        // Guarantee the line matches the idempotency regex (starts with ★ or
+        // "Letterboxd") so it can be found and replaced on refresh. Formats
+        // beginning with "Letterboxd" are left untouched to stay safe on
+        // clients whose fonts may not include the ★ glyph (e.g. Roku).
+        if (!line.StartsWith('★') && !line.StartsWith("Letterboxd", StringComparison.Ordinal))
         {
             line = "★ " + line;
         }
