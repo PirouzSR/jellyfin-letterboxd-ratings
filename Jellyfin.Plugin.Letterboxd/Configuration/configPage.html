@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Letterboxd Ratings</title>
+</head>
+<body>
+<div id="LetterboxdConfigPage" data-role="page" class="page type-interior pluginConfigurationPage" data-require="emby-input,emby-button,emby-checkbox">
+    <div data-role="content">
+        <div class="content-primary">
+            <form id="LetterboxdConfigForm">
+                <div class="verticalSection">
+                    <h2 class="sectionTitle">Letterboxd Ratings</h2>
+                    <p>Fetches the Letterboxd community star rating for each movie (matched by TMDB / IMDb ID) and writes it to the fields below. Ratings are refreshed by the <em>Update Letterboxd Ratings</em> scheduled task.</p>
+                </div>
+
+                <div class="verticalSection">
+                    <h3 class="sectionTitle">Where to show the rating</h3>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="WriteToOverview" />
+                            <span>Append to description (overview)</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">Adds a line like "★ 4.1/5 on Letterboxd (108,132 ratings)" at the end of the movie description. Visible in every Jellyfin client. Recommended.</div>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="OverviewFormat">Description line format</label>
+                        <input is="emby-input" type="text" id="OverviewFormat" />
+                        <div class="fieldDescription">Placeholders: <code>{rating}</code> (0.5&ndash;5 stars) and <code>{count}</code> (number of ratings).</div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="WriteToCriticRating" />
+                            <span>Write to Critic Rating (0&ndash;100 badge)</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">Shows in the ratings row next to the IMDb star. Only enable if you don't already use Rotten Tomatoes critic scores &mdash; it occupies the same badge.</div>
+                    </div>
+
+                    <div class="checkboxContainer checkboxContainer-withDescription">
+                        <label>
+                            <input is="emby-checkbox" type="checkbox" id="OverwriteCommunityRating" />
+                            <span>Overwrite Community Rating (star badge)</span>
+                        </label>
+                        <div class="fieldDescription checkboxFieldDescription">Replaces the IMDb/TMDb star rating with the Letterboxd score converted to a 10-point scale. Leave off to keep IMDb stars.</div>
+                    </div>
+                </div>
+
+                <div class="verticalSection">
+                    <h3 class="sectionTitle">Fetching behaviour</h3>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="RequestDelayMs">Delay between requests (ms)</label>
+                        <input is="emby-input" type="number" id="RequestDelayMs" min="500" step="100" />
+                        <div class="fieldDescription">Minimum 500. Be polite to Letterboxd &mdash; the default of 1500 works well.</div>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="RefreshIntervalDays">Re-check ratings after (days)</label>
+                        <input is="emby-input" type="number" id="RefreshIntervalDays" min="1" step="1" />
+                        <div class="fieldDescription">Movies checked within this window are skipped when the task runs.</div>
+                    </div>
+
+                    <div class="inputContainer">
+                        <label class="inputLabel inputLabelUnfocused" for="UserAgent">User-Agent</label>
+                        <input is="emby-input" type="text" id="UserAgent" />
+                        <div class="fieldDescription">Sent with each request. Change only if requests start being rejected.</div>
+                    </div>
+                </div>
+
+                <div>
+                    <button is="emby-button" type="submit" class="raised button-submit block emby-button">
+                        <span>Save</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script type="text/javascript">
+        (function () {
+            var pluginId = 'b8f7c1e2-4a3d-4e5f-9c6b-7d8e9f0a1b2c';
+
+            function loadConfig(page) {
+                Dashboard.showLoadingMsg();
+                ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                    page.querySelector('#WriteToOverview').checked = config.WriteToOverview;
+                    page.querySelector('#OverviewFormat').value = config.OverviewFormat || '';
+                    page.querySelector('#WriteToCriticRating').checked = config.WriteToCriticRating;
+                    page.querySelector('#OverwriteCommunityRating').checked = config.OverwriteCommunityRating;
+                    page.querySelector('#RequestDelayMs').value = config.RequestDelayMs;
+                    page.querySelector('#RefreshIntervalDays').value = config.RefreshIntervalDays;
+                    page.querySelector('#UserAgent').value = config.UserAgent || '';
+                    Dashboard.hideLoadingMsg();
+                });
+            }
+
+            document.querySelector('#LetterboxdConfigPage')
+                .addEventListener('pageshow', function () {
+                    loadConfig(this);
+                });
+
+            document.querySelector('#LetterboxdConfigForm')
+                .addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    Dashboard.showLoadingMsg();
+                    var page = document.querySelector('#LetterboxdConfigPage');
+                    ApiClient.getPluginConfiguration(pluginId).then(function (config) {
+                        config.WriteToOverview = page.querySelector('#WriteToOverview').checked;
+                        config.OverviewFormat = page.querySelector('#OverviewFormat').value;
+                        config.WriteToCriticRating = page.querySelector('#WriteToCriticRating').checked;
+                        config.OverwriteCommunityRating = page.querySelector('#OverwriteCommunityRating').checked;
+                        config.RequestDelayMs = parseInt(page.querySelector('#RequestDelayMs').value, 10) || 1500;
+                        config.RefreshIntervalDays = parseInt(page.querySelector('#RefreshIntervalDays').value, 10) || 14;
+                        config.UserAgent = page.querySelector('#UserAgent').value;
+                        ApiClient.updatePluginConfiguration(pluginId, config).then(function (result) {
+                            Dashboard.processPluginConfigurationUpdateResult(result);
+                        });
+                    });
+                    return false;
+                });
+        })();
+    </script>
+</div>
+</body>
+</html>

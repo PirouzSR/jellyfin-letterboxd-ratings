@@ -1,0 +1,17 @@
+name: "Letterboxd Ratings"
+guid: "b8f7c1e2-4a3d-4e5f-9c6b-7d8e9f0a1b2c"
+version: "1.0.0.0"
+targetAbi: "10.11.0.0"
+framework: "net9.0"
+overview: "Show Letterboxd community star ratings on your movies."
+description: >
+  Fetches the Letterboxd community star rating for every movie in your library
+  (matched via TMDB or IMDb ID) and writes it into the movie description,
+  and optionally the critic or community rating fields. Runs as a scheduled
+  task with polite rate limiting and a local cache.
+category: "Metadata"
+owner: "pirouz"
+artifacts:
+  - "Jellyfin.Plugin.Letterboxd.dll"
+changelog: >
+  Initial release.
