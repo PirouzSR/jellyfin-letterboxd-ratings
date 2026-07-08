@@ -17,9 +17,14 @@ namespace Jellyfin.Plugin.Letterboxd.Web;
 /// </summary>
 public partial class WebInterfaceInjector : IHostedService
 {
-    // Relative URL so it works behind reverse proxies with a path prefix.
+    // jellyfin-web's index.html is always served from "<base>/web/", while the
+    // plugin's API lives at "<base>/LetterboxdRatings". The "../" climbs out of
+    // "/web/" back to the server root, so the src resolves correctly whether
+    // Jellyfin is at the domain root or behind a reverse proxy with a path
+    // prefix (e.g. example.com/jellyfin/). A bare relative "LetterboxdRatings/…"
+    // would wrongly resolve under "/web/" and 404.
     private const string ScriptTag =
-        "<script defer src=\"LetterboxdRatings/ClientScript\" data-letterboxd-ratings=\"injected\"></script>";
+        "<script defer src=\"../LetterboxdRatings/ClientScript\" data-letterboxd-ratings=\"injected\"></script>";
 
     private readonly IApplicationPaths _applicationPaths;
     private readonly ILogger<WebInterfaceInjector> _logger;

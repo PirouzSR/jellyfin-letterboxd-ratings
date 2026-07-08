@@ -1,6 +1,6 @@
 name: "Letterboxd Ratings"
 guid: "b8f7c1e2-4a3d-4e5f-9c6b-7d8e9f0a1b2c"
-version: "1.0.0.0"
+version: "1.0.0.1"
 targetAbi: "10.11.0.0"
 framework: "net9.0"
 overview: "Show Letterboxd community star ratings on your movies."
@@ -14,4 +14,6 @@ owner: "pirouz"
 artifacts:
   - "Jellyfin.Plugin.Letterboxd.dll"
 changelog: >
-  Initial release.
+  Fix the injected badge script URL so it loads when jellyfin-web is served
+  under /web/ (reverse-proxy and default deployments). The bare relative src
+  resolved under /web/ and 404'd; it now climbs to the server root.
