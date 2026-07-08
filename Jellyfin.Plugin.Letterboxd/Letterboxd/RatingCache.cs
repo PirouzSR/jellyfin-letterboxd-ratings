@@ -16,6 +16,7 @@ public class RatingCache
 {
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = false };
 
+    private readonly string _cacheDir;
     private readonly string _cacheFilePath;
     private readonly ILogger<RatingCache> _logger;
     private readonly object _saveLock = new();
@@ -30,9 +31,13 @@ public class RatingCache
     public RatingCache(IApplicationPaths applicationPaths, ILogger<RatingCache> logger)
     {
         _logger = logger;
-        var dir = Path.Combine(applicationPaths.CachePath, "letterboxd-ratings");
-        Directory.CreateDirectory(dir);
-        _cacheFilePath = Path.Combine(dir, "cache.json");
+        // Store under DataPath (/config on typical container deployments), which
+        // is the persistent volume, rather than CachePath (/cache). On some
+        // setups — notably TrueNAS SCALE — /cache is not persisted and can be
+        // cleared out from under a running process, which broke Save().
+        _cacheDir = Path.Combine(applicationPaths.DataPath, "letterboxd-ratings");
+        Directory.CreateDirectory(_cacheDir);
+        _cacheFilePath = Path.Combine(_cacheDir, "cache.json");
         Load();
     }
 
@@ -97,6 +102,9 @@ public class RatingCache
         {
             try
             {
+                // Re-create defensively: the directory can disappear at runtime
+                // if the underlying volume is cleared (see constructor note).
+                Directory.CreateDirectory(_cacheDir);
                 var tmp = _cacheFilePath + ".tmp";
                 File.WriteAllText(tmp, JsonSerializer.Serialize(_entries, JsonOptions));
                 File.Move(tmp, _cacheFilePath, overwrite: true);
