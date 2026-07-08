@@ -1,0 +1,21 @@
+[
+  {
+    "guid": "b8f7c1e2-4a3d-4e5f-9c6b-7d8e9f0a1b2c",
+    "name": "Letterboxd Ratings",
+    "overview": "Show Letterboxd community star ratings on your movies.",
+    "description": "Fetches the Letterboxd community star rating for every movie in your library (matched via TMDB or IMDb ID), displays it as a badge with the Letterboxd logo next to your IMDb and critic ratings, and optionally appends it to the movie description.",
+    "owner": "PirouzSR",
+    "category": "Metadata",
+    "imageUrl": "",
+    "versions": [
+      {
+        "version": "1.0.0.0",
+        "changelog": "Release v1.0.0.0",
+        "targetAbi": "10.11.0.0",
+        "sourceUrl": "https://github.com/PirouzSR/jellyfin-letterboxd-ratings/releases/download/v1.0.0.0/letterboxd-ratings.zip",
+        "checksum": "c7d4c1ba0348bcd2255eaf921e5a4efe",
+        "timestamp": "2026-07-08T05:52:33Z"
+      }
+    ]
+  }
+]
